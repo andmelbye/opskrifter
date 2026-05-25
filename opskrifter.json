@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Pasta Carbonara",
+    "description": "A classic Roman pasta with eggs, cheese, and crispy pancetta",
+    "image_url": "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600",
+    "source_url": "https://www.seriouseats.com/the-best-carbonara",
+    "servings": "2",
+    "prep_time": "10 min",
+    "cook_time": "20 min",
+    "rating": 5,
+    "tags": "Italian, pasta, quick",
+    "ingredients": "- 200g spaghetti\n- 100g pancetta or guanciale\n- 2 large eggs + 1 yolk\n- 50g Pecorino Romano, grated\n- 50g Parmesan, grated\n- Freshly ground black pepper\n- Salt for pasta water",
+    "instructions": "1. Boil salted water and cook spaghetti until al dente.\n2. Fry pancetta in a pan until crispy, then remove from heat.\n3. Whisk eggs, yolk, and most of the cheese together.\n4. Reserve a cup of pasta water before draining.\n5. Add hot pasta to the pancetta pan off heat.\n6. Pour in egg mixture, tossing quickly and adding pasta water to loosen.\n7. Serve immediately with extra cheese and black pepper.",
+    "notes": "The key is to keep the heat low when adding the eggs — you want a creamy sauce, not scrambled eggs!"
+  },
+  {
+    "title": "Banana Pancakes",
+    "description": "Fluffy weekend pancakes with caramelised banana",
+    "image_url": "https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=600",
+    "source_url": "",
+    "servings": "2",
+    "prep_time": "5 min",
+    "cook_time": "15 min",
+    "rating": 4,
+    "tags": "breakfast, sweet, quick",
+    "ingredients": "- 1 cup plain flour\n- 1 tbsp sugar\n- 1 tsp baking powder\n- 1/2 tsp salt\n- 1 egg\n- 3/4 cup milk\n- 2 tbsp melted butter\n- 2 bananas",
+    "instructions": "1. Mix dry ingredients in a bowl.\n2. Whisk together egg, milk, and butter.\n3. Combine wet and dry ingredients — don't overmix, lumps are fine.\n4. Slice one banana and fold into batter.\n5. Cook on a medium pan for 2-3 min each side.\n6. Slice the second banana, fry in butter and a pinch of sugar, serve on top.",
+    "notes": "Add a splash of vanilla extract to the batter for extra flavour."
+  }
+]
