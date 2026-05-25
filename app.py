@@ -327,9 +327,9 @@ elif st.session_state.page == "home":
                             st.session_state.selected_index = original_index
                             st.session_state.page = "detail"
                             st.rerun()
-                    with del_col:
-                        if st.button("🗑️", key=f"del_{original_index}", help="Delete recipe"):
-                            delete_recipe(original_index)
+                    # with del_col:
+                    #     if st.button("🗑️", key=f"del_{original_index}", help="Delete recipe"):
+                    #         delete_recipe(original_index)
 
 # ── ADD RECIPE PAGE ───────────────────────────────────────────
 elif st.session_state.page == "add":
