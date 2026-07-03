@@ -24,8 +24,10 @@ CATEGORIES = [
     "🍞 Bread & Baking",
 ]
 
+USERS = ["DEK", "AK"]
+
 FIELDS = ["title","description","image_url","source_url","servings",
-          "prep_time","cook_time","rating","categories","tags",
+          "prep_time","cook_time","rating","added_by","categories","tags",
           "ingredients","instructions","notes"]
 
 # ── Google Sheets connection ──────────────────────────────────
@@ -52,15 +54,14 @@ def load_recipes():
     recipes = []
     for row in rows:
         r = dict(row)
-        # Parse categories and tags back from stored strings
+        # Parse categories back from stored strings
         r["categories"] = [c for c in r.get("categories","").split("||") if c]
         recipes.append(r)
     return recipes
 
-def save_new_recipe(data):
-    sheet = get_sheet()
+def _row_from_data(data):
     cats = "||".join(data.get("categories", []))
-    row = [
+    return [
         data.get("title",""),
         data.get("description",""),
         data.get("image_url",""),
@@ -69,33 +70,22 @@ def save_new_recipe(data):
         data.get("prep_time",""),
         data.get("cook_time",""),
         data.get("rating", 5),
+        data.get("added_by", USERS[0]),
         cats,
         data.get("tags",""),
         data.get("ingredients",""),
         data.get("instructions",""),
         data.get("notes",""),
     ]
-    sheet.append_row(row)
+
+def save_new_recipe(data):
+    sheet = get_sheet()
+    sheet.append_row(_row_from_data(data))
 
 def update_recipe(row_number, data):
     """row_number is 1-indexed sheet row (add 2: 1 for header, 1 for 1-index)"""
     sheet = get_sheet()
-    cats = "||".join(data.get("categories", []))
-    row = [
-        data.get("title",""),
-        data.get("description",""),
-        data.get("image_url",""),
-        data.get("source_url",""),
-        data.get("servings",""),
-        data.get("prep_time",""),
-        data.get("cook_time",""),
-        data.get("rating", 5),
-        cats,
-        data.get("tags",""),
-        data.get("ingredients",""),
-        data.get("instructions",""),
-        data.get("notes",""),
-    ]
+    row = _row_from_data(data)
     sheet_row = row_number + 2  # +1 for header, +1 for 1-indexing
     sheet.update(f"A{sheet_row}:{chr(65+len(FIELDS)-1)}{sheet_row}", [row])
 
@@ -122,7 +112,13 @@ def recipe_form(existing=None):
     with col3:
         cook_time = st.text_input("Cook time", value=e.get("cook_time",""), placeholder="e.g. 30 min")
 
-    rating = st.select_slider("Rating", options=[1,2,3,4,5], value=int(e.get("rating", 5)))
+    col4, col5 = st.columns(2)
+    with col4:
+        rating = st.select_slider("Rating", options=[1,2,3,4,5], value=int(e.get("rating", 5)))
+    with col5:
+        existing_user = e.get("added_by", USERS[0])
+        user_index = USERS.index(existing_user) if existing_user in USERS else 0
+        added_by = st.selectbox("Added by", options=USERS, index=user_index)
 
     st.subheader("Categories")
     existing_cats = e.get("categories", [])
@@ -142,7 +138,7 @@ def recipe_form(existing=None):
 
     return dict(title=title, description=description, image_url=image_url,
                 source_url=source_url, servings=servings, prep_time=prep_time,
-                cook_time=cook_time, rating=rating, categories=categories,
+                cook_time=cook_time, rating=rating, added_by=added_by, categories=categories,
                 tags=tags, ingredients=ingredients, instructions=instructions, notes=notes)
 
 # ── Page config ───────────────────────────────────────────────
@@ -154,6 +150,9 @@ st.markdown("""
     .category-badge { display:inline-block; background:#e8f5e9; color:#2e7d32;
                       border-radius:20px; padding:2px 10px; font-size:0.75rem;
                       margin-right:4px; margin-bottom:2px; }
+    .user-badge { display:inline-block; background:#e3f2fd; color:#1565c0;
+                  border-radius:20px; padding:2px 10px; font-size:0.75rem;
+                  margin-right:4px; margin-bottom:2px; font-weight:600; }
     .rating { color:#f5a623; font-size:1.1rem; }
     h1 { font-size:2rem !important; }
 </style>
@@ -187,6 +186,9 @@ if st.session_state.page == "detail":
             st.image(recipe["image_url"], use_container_width=True)
 
     with col2:
+        if recipe.get("added_by"):
+            st.markdown(f'<span class="user-badge">👤 {recipe["added_by"]}</span>', unsafe_allow_html=True)
+            st.markdown("")
         if recipe.get("categories"):
             cats_html = " ".join([f'<span class="category-badge">{c}</span>' for c in recipe["categories"]])
             st.markdown(cats_html, unsafe_allow_html=True)
@@ -261,7 +263,7 @@ elif st.session_state.page == "home":
             st.session_state.page = "add"
             st.rerun()
 
-    col_cat, col_tag, col_sort = st.columns(3)
+    col_cat, col_tag, col_user, col_sort = st.columns(4)
     with col_cat:
         cat_filter = st.multiselect("Filter by category", CATEGORIES)
     with col_tag:
@@ -271,6 +273,8 @@ elif st.session_state.page == "home":
                 for t in r["tags"].split(","):
                     if t.strip(): all_tags.add(t.strip())
         tag_filter = st.multiselect("Filter by tag", sorted(all_tags))
+    with col_user:
+        user_filter = st.multiselect("Filter by user", USERS)
     with col_sort:
         sort_by = st.selectbox("Sort by", ["Newest first","Oldest first","Rating (high to low)","A → Z"])
 
@@ -282,6 +286,8 @@ elif st.session_state.page == "home":
         filtered = [r for r in filtered if any(c in r.get("categories",[]) for c in cat_filter)]
     if tag_filter:
         filtered = [r for r in filtered if any(t in r.get("tags","") for t in tag_filter)]
+    if user_filter:
+        filtered = [r for r in filtered if r.get("added_by","") in user_filter]
     if sort_by == "Newest first":
         filtered = list(reversed(filtered))
     elif sort_by == "Rating (high to low)":
@@ -308,6 +314,8 @@ elif st.session_state.page == "home":
                     else:
                         st.markdown("🍽️")
                     st.markdown(f"**{recipe['title']}**")
+                    if recipe.get("added_by"):
+                        st.markdown(f'<span class="user-badge" style="font-size:0.7rem">👤 {recipe["added_by"]}</span>', unsafe_allow_html=True)
                     if recipe.get("rating"):
                         stars = "★" * int(recipe["rating"]) + "☆" * (5 - int(recipe["rating"]))
                         st.markdown(f'<span class="rating" style="font-size:0.9rem">{stars}</span>', unsafe_allow_html=True)
